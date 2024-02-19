@@ -160,11 +160,12 @@ DX_CUIS as (
 		WHERE a.boc_cui in('boc004248','boc004265')),
 ALL_DX as (SELECT DISTINCT MAIN.PATIENT_ID
 				,A.ENCOUNTER_ID
-                                ,TO_DATE(A.DIAGNOSIS_DATE) AS DX_DATE
+				,TO_DATE(A.DIAGNOSIS_DATE) AS DX_DATE
 				,B.boc_cui
 			FROM RESEARCH.GSK_CRSWNP.A_PATIENT_LMRJR AS MAIN
 			INNER JOIN DELIVERED_211.profile_store.diagnosis AS A ON MAIN.PATIENT_ID=A.PATIENT_ID
 			INNER JOIN DX_CUIS b ON (trim(lower(a.code)) = trim(lower(b.mapped_diagnosis_code)) AND trim(lower(a.code_type_name)) = trim(lower(b.code_type_name)))),
+-- directly use CLINICAL_ENCOUNTER and link to encounter and use ENCOUNTER_TYPE = outpatient
 ENC_DATA AS (SELECT MAIN.PATIENT_ID
 				,BASE.ENCOUNTER_ID
 				,PROV.PROVIDER_ID
@@ -179,7 +180,7 @@ ENC_DATA AS (SELECT MAIN.PATIENT_ID
 				AND CUI.ENCOUNTER_TYPE_CUI IN('boc000445')),
 TT AS (SELECT DISTINCT ED.PATIENT_ID
 			,ED.ENC_DATE
-                        ,DXD.DX_DATE
+						,DXD.DX_DATE
 			,CAT.SPECIALTY_CUI
 			,DXD.BOC_CUI
 	   FROM ENC_DATA AS ED
