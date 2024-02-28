@@ -129,6 +129,8 @@ SELECT DISTINCT MAIN.PATIENT_ID
 	,COUNT(DISTINCT CASE WHEN BASE.MED_CUIS = 'boc005244' THEN BASE.MEDICATION_START ELSE NULL END) AS BENR
 	,COUNT(DISTINCT CASE WHEN BASE.MED_CUIS = 'boc005246' THEN BASE.MEDICATION_START ELSE NULL END) AS RESI
 	,COUNT(DISTINCT CASE WHEN BASE.MED_CUIS = 'boc011543' THEN BASE.MEDICATION_START ELSE NULL END) AS TEZE
+	,COUNT(DISTINCT CASE WHEN BASE.MED_CUIS IN('boc000600','boc003042','boc008640','boc004274','boc005247','boc005244','boc005246','boc011543') AND BASE.SPECIALTY_CUI = 'boc002384' THEN BASE.MEDICATION_START ELSE NULL END) AS SPEC_PULM
+	,COUNT(DISTINCT CASE WHEN BASE.MED_CUIS IN('boc000600','boc003042','boc008640','boc004274','boc005247','boc005244','boc005246','boc011543') AND BASE.SPECIALTY_CUI = 'boc002358' THEN BASE.MEDICATION_START ELSE NULL END) AS SPEC_ALRG
 	--,CASE WHEN BASE.SPECIALTY_CUI = 'boc002384' THEN 1 ELSE 0 END AS SPEC_PULM
 	--,CASE WHEN BASE.SPECIALTY_CUI = 'boc002358' THEN 1 ELSE 0 END AS SPEC_ALRG
 	,COUNT(DISTINCT CASE WHEN BASE.MED_CUIS = 'boc012578' THEN BASE.MEDICATION_START ELSE NULL END) AS ASTH_INHALED
@@ -146,10 +148,6 @@ FROM RESEARCH.GSK_CRSWNP.A_PATIENT_LMRJR AS MAIN
 LEFT JOIN TT AS BASE ON MAIN.PATIENT_ID=BASE.PATIENT_ID
 GROUP BY 1,2,3;
 
-
-SELECT *
-FROM MY_MEDS
-LIMIT 100;
 /*******************************************************************************************************************
 * PUTTING IT ALL TOGETHER
 * MAKING SURE EACH TIME POINT HAS A VALUE
@@ -168,8 +166,8 @@ SELECT MAIN.PATIENT_ID
 				,CASE WHEN FTA.BENR IS NULL THEN 0 ELSE FTA.BENR END AS BENR
 				,CASE WHEN FTA.RESI IS NULL THEN 0 ELSE FTA.RESI END AS RESI
 				,CASE WHEN FTA.TEZE IS NULL THEN 0 ELSE FTA.TEZE END AS TEZE
-				,CASE WHEN FTA.SPEC_PULM IS NULL THEN 0 ELSE FTA.SPEC_PULM END AS SPEC_PULM
-				,CASE WHEN FTA.SPEC_ALRG IS NULL THEN 0 ELSE FTA.SPEC_ALRG END AS SPEC_ALRG
+				,CASE WHEN FTA.SPEC_PULM > 0 THEN 1 ELSE 0 END AS SPEC_PULM
+				,CASE WHEN FTA.SPEC_ALRG > 0 THEN 1 ELSE 0 END AS SPEC_ALRG
 				,CASE WHEN FTA.ASTH_INHALED IS NULL THEN 0 ELSE FTA.ASTH_INHALED END AS ASTH_INHALED
 				,CASE WHEN FTA.ASTH_ICS IS NULL THEN 0 ELSE FTA.ASTH_ICS END AS ASTH_ICS
 				,CASE WHEN FTA.ASTH_LABA IS NULL THEN 0 ELSE FTA.ASTH_LABA END AS ASTH_LABA
@@ -184,100 +182,6 @@ SELECT MAIN.PATIENT_ID
 FROM FINAL_TABLE AS MAIN
 LEFT JOIN MY_MEDS AS FTA ON MAIN.PATIENT_ID=FTA.PATIENT_ID AND MAIN.INDEX_DATE=FTA.INDEX_DATE AND MAIN.RUN_ID=FTA.RUN_ID;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*--------------------------------------------
-Project: Bayer CKD
-Programmer: Mudit Bhartia
-Date: 12/06/2023
-Purpose: Create med_era_prep
-
---------------------------------------------*/
-use warehouse query_wh_large;
-use Delivered_205;
-
---Then we make a med_era_prep dataset with all the necessary information
-create or replace table research.bayer.med_era_prep_finerenone as
-select distinct a.patient_id, medication_event_id as medication_id, encounter_id, 
-		case when d.mapped_medication_code in ('30354030000310','30354030000320','50419054001','50419054002',
-								'50419054070','2562816','2562822') then 'boc999999' else 'boc000000' end as code, 
-		'boc' as code_type,                         
-		/*d.boc_name*/ case when d.mapped_medication_code in ('30354030000310','30354030000320','50419054001','50419054002',
-								'50419054070','2562816','2562822') then 'Finereone Ten' else 'Finereone Twenty' end as name, 
-		medication_start,
-		case when days_supply is not null then dateadd(day, days_supply, medication_start) 
-			 else dateadd(day, 60, medication_start) end as medication_end, 
-		30 as persistence_window, 
-		case when admin_start is not null then True
-				else False end as is_admin,
-		'none' as deoverlap_class, null as notes
-from research.bayer.a_patient as a
-left join profile_store.medication_event as b
-		on a.patient_id = b.patient_id
-join profile_store.medication_info as c
-		on b.medication_info_id = c.medication_info_id
-join MAPSET_20231121.public.boc_map_medication_rollup as d
-		on trim(lower(c.code)) = trim(lower(d.mapped_medication_code))
-				and trim(lower(c.code_type)) = trim(lower(d.code_type))
-where d.boc_cui = 'boc010219'
-;
-
-
---inspect results: 
-select * from research.bayer.med_era_prep_finerenone;
-select count(*),count(distinct patient_id) from research.biostat.med_era_prep_finerenone; 
-
+SELECT *
+FROM RESEARCH.GSK_CRSWNP.A_MEDICATION_LMRJR
+LIMIT 100;
