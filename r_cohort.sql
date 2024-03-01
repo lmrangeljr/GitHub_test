@@ -257,8 +257,8 @@ FROM crs_np_flags;
 * THIS IS FOR GETTING THE SPECIALIST EMR ENCOUNTERS FOR REDSOX AND TARHEEL LOOKING FOR:
 ********************************************************************************************************************
 Provider Specialty:             *       Pulmonologist           *       boc002384       *       Pulmonary Disease
-												*       Allergist                       *       boc002358       *       Allergy/Immunology
-												*       Otolaryngologist        *       boc002359       *       Otolaryngology
+								*       Allergist               *       boc002358       *       Allergy/Immunology
+								*       Otolaryngologist        *       boc002359       *       Otolaryngology
 ********************************************************************************************************************
 *******************************************************************************************************************/
 CREATE OR REPLACE TEMPORARY TABLE SPECIALTY_FLAGS AS
