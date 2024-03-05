@@ -202,7 +202,7 @@ Diagnosis  Request                              * CUI                   * Name
 **********************************************************************************************
 CRS                                             * boc004248             * Chronic sinusitis (NCQA value set)
 NP                                              * boc004265             * Nasal Polyps (ECRI plus value set)
-Severe Asthma - client requests J45.5x  * boc012772             * Severe Asthma (S)
+Severe Asthma - client requests J45.5x  		* boc012772             * Severe Asthma (S)
 **********************************************************************************************
 *******************************************************************************************************************/
 --baseline CRS , NP, Asthma
